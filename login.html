@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Reflection Space — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fdf2f8;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .modal-overlay {
+      width: 100%;
+      max-width: 24rem;
+      padding: 1rem;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 1.4rem;
+      padding: 2rem 1.8rem;
+      box-shadow: 0 8px 40px rgba(139, 30, 71, 0.1), 0 2px 12px rgba(0,0,0,0.06);
+      position: relative;
+    }
+
+    .modal-title {
+      font-family: 'Caveat', cursive;
+      font-size: 1.8rem;
+      color: #8B1E47;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.2rem;
+    }
+
+    .modal-subtitle {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #a0607e;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.65rem;
+      color: #8B1E47;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1.5px solid rgba(249, 168, 212, 0.35);
+      border-radius: 0.6rem;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.85rem;
+      color: #5a2d3f;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fdf8fa;
+    }
+
+    .form-group input:focus {
+      border-color: #ec4899;
+      background: white;
+    }
+
+    .form-group input::placeholder {
+      color: #dba8c4;
+    }
+
+    .name-field { display: none; }
+    .name-field.visible { display: block; }
+
+    .btn {
+      width: 100%;
+      padding: 0.7rem;
+      border-radius: 0.7rem;
+      border: none;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.15s;
+      margin-top: 0.4rem;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: #8B1E47;
+      color: white;
+      box-shadow: 0 3px 12px rgba(139, 30, 71, 0.25);
+    }
+
+    .toggle-row {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: 0.75rem;
+      color: #a0607e;
+    }
+
+    .toggle-link {
+      color: #8B1E47;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: 1px dashed #ec4899;
+    }
+
+    .toggle-link:hover { color: #ec4899; }
+
+    .error-msg {
+      display: none;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.75rem;
+      margin-bottom: 0.8rem;
+      text-align: center;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .back-link a {
+      font-size: 0.7rem;
+      color: #c084a0;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .back-link a:hover { color: #8B1E47; }
+
+    .btn-outline {
+      background: #fdf2f8;
+      color: #8B1E47;
+      border: 1.5px solid #f9a8d4;
+    }
+
+    .btn-outline:hover { background: #fce7f3; border-color: #ec4899; }
+
+    .signed-in-avatar {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f9a8d4, #ec4899);
+      margin: 0 auto 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Caveat', cursive;
+      font-size: 1.5rem;
+      color: white;
+      font-weight: 700;
+    }
+
+    .signed-in-name {
+      font-family: 'Caveat', cursive;
+      font-size: 1.4rem;
+      color: #8B1E47;
+      font-weight: 700;
+    }
+
+    .signed-in-email {
+      font-size: 0.7rem;
+      color: #a0607e;
+      margin-top: 0.1rem;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.85);
+      border-radius: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Caveat', cursive;
+      font-size: 1.1rem;
+      color: #8B1E47;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="modal-overlay">
+    <div class="modal">
+      <h1 class="modal-title" id="modalTitle">Welcome back</h1>
+      <p class="modal-subtitle" id="modalSubtitle">Sign in to continue your reflection</p>
+
+      <!-- Signed-in view -->
+      <div id="signedInView" style="display:none; text-align:center;">
+        <div class="signed-in-avatar" id="signedInAvatar"></div>
+        <div class="signed-in-name" id="signedInName"></div>
+        <div class="signed-in-email" id="signedInEmail"></div>
+        <button class="btn btn-primary" onclick="goToReflect()" style="margin-top:1rem;">Continue to Reflect →</button>
+        <button class="btn btn-outline" onclick="handleSignOut()" style="margin-top:0.5rem;">Sign Out</button>
+      </div>
+
+      <!-- Auth form view -->
+      <div id="authView">
+        <div class="error-msg" id="errorMsg"></div>
+
+        <form id="authForm" onsubmit="return false;">
+          <div class="form-group name-field" id="nameGroup">
+            <label for="nameInput">Your name</label>
+            <input type="text" id="nameInput" placeholder="e.g. Sameer" autocomplete="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="emailInput">Email</label>
+            <input type="email" id="emailInput" placeholder="you@example.com" autocomplete="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="passwordInput">Password</label>
+            <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitBtn">Sign In</button>
+        </form>
+
+        <div class="toggle-row">
+          <span id="toggleText">Don't have an account? </span>
+          <a class="toggle-link" id="toggleLink" onclick="toggleMode()">Sign up</a>
+        </div>
+      </div>
+
+      <div class="back-link">
+        <a href="index.html">← back to cover</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    let isSignUp = false;
+    let currentUserName = '';
+
+    const authView = document.getElementById('authView');
+    const signedInView = document.getElementById('signedInView');
+    const form = document.getElementById('authForm');
+    const nameGroup = document.getElementById('nameGroup');
+    const nameInput = document.getElementById('nameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMsg = document.getElementById('errorMsg');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalSubtitle = document.getElementById('modalSubtitle');
+    const toggleText = document.getElementById('toggleText');
+    const toggleLink = document.getElementById('toggleLink');
+
+    function showSignedIn(name, email) {
+      currentUserName = name;
+      const initial = (name || email || '?')[0].toUpperCase();
+      document.getElementById('signedInAvatar').textContent = initial;
+      document.getElementById('signedInName').textContent = name || 'Anonymous';
+      document.getElementById('signedInEmail').textContent = email || '';
+      modalTitle.textContent = 'Welcome back';
+      modalSubtitle.textContent = 'You\'re signed in';
+      authView.style.display = 'none';
+      signedInView.style.display = 'block';
+    }
+
+    function showAuthForm() {
+      authView.style.display = 'block';
+      signedInView.style.display = 'none';
+      modalTitle.textContent = isSignUp ? 'Create account' : 'Welcome back';
+      modalSubtitle.textContent = isSignUp
+        ? 'Sign up to start reflecting'
+        : 'Sign in to continue your reflection';
+    }
+
+    function goToReflect() {
+      window.location.href = 'reflect.html';
+    }
+
+    async function handleSignOut() {
+      try {
+        await API.signOut();
+      } catch (e) { /* ignore */ }
+      currentUserName = '';
+      showAuthForm();
+      modalTitle.textContent = 'Welcome back';
+      modalSubtitle.textContent = 'Sign in to continue your reflection';
+    }
+
+    function toggleMode() {
+      isSignUp = !isSignUp;
+      nameGroup.classList.toggle('visible', isSignUp);
+      submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+      modalTitle.textContent = isSignUp ? 'Create account' : 'Welcome back';
+      modalSubtitle.textContent = isSignUp
+        ? 'Sign up to start reflecting'
+        : 'Sign in to continue your reflection';
+      toggleText.textContent = isSignUp ? 'Already have an account? ' : "Don't have an account? ";
+      toggleLink.textContent = isSignUp ? 'Sign in' : 'Sign up';
+      errorMsg.textContent = '';
+      errorMsg.style.display = 'none';
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+    }
+
+    // Check for existing session on load
+    (async () => {
+      try {
+        const jwt = await API.getSession();
+        if (jwt) {
+          const payload = JSON.parse(atob(jwt.split('.')[1]));
+          showSignedIn(
+            payload.name || payload.email?.split('@')[0] || 'Anonymous',
+            payload.email || ''
+          );
+        }
+      } catch (e) {
+        // No session — show auth form
+      }
+    })();
+
+    form.addEventListener('submit', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const name = nameInput.value.trim();
+
+      if (!email || !password) return showError('Email and password are required');
+      if (isSignUp && !name) return showError('Name is required for sign-up');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = isSignUp ? 'Creating account...' : 'Signing in...';
+      errorMsg.style.display = 'none';
+
+      try {
+        let userName, userEmail;
+
+        if (isSignUp) {
+          const data = await API.signUp(email, password, name);
+          userName = data.user?.name || name;
+          userEmail = data.user?.email || email;
+        } else {
+          const data = await API.signIn(email, password);
+          userName = data.user?.name || email.split('@')[0];
+          userEmail = data.user?.email || email;
+        }
+
+        // Get JWT for session
+        await API.getSession();
+
+        showSignedIn(userName, userEmail);
+      } catch (e) {
+        showError(e.message || 'Something went wrong');
+        submitBtn.disabled = false;
+        submitBtn.textContent = isSignUp ? 'Sign Up' : 'Sign In';
+      }
+    });
+
+    passwordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') form.dispatchEvent(new Event('submit'));
+    });
+  </script>
+</body>
+</html>
