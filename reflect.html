@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Reflection Space — Reflect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Varela+Round&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fdf2f8;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .book-wrapper {
+      width: 100%;
+      max-width: 26rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+    .book {
+      width: 100%;
+      max-width: 26rem;
+      aspect-ratio: 3 / 4;
+      position: relative;
+      perspective: 1800px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .shadow-1 {
+      position: absolute; inset: 0;
+      background: #A3A3A3; border-radius: 1.8rem;
+      transform: translate(14px, 12px); z-index: -2;
+    }
+    .shadow-2 {
+      position: absolute; inset: 0;
+      background: #E0E0E0; border-radius: 1.8rem;
+      transform: translate(7px, 6px); z-index: -1;
+    }
+
+    .rings {
+      position: absolute; left: -15px;
+      top: 1rem; bottom: 1rem; width: 30px;
+      display: flex; flex-direction: column;
+      justify-content: space-between; padding: 2% 0;
+      z-index: 50; pointer-events: none;
+    }
+    .ring {
+      width: 30px; height: 12px;
+      background: linear-gradient(to right, #fbbf24, #fde68a, #d97706);
+      border-radius: 9999px;
+      box-shadow: 0 4px 4px rgba(0,0,0,0.4), inset 0 -2px 4px rgba(255,255,255,0.6);
+      border: 1px solid rgba(180,130,20,0.5);
+    }
+
+    /* Each .page is a flippable sheet */
+    .page {
+      position: absolute; inset: 0;
+      border-radius: 1.8rem;
+      overflow: hidden;
+      background:
+        repeating-linear-gradient(
+          transparent,
+          transparent 1.45rem,
+          rgba(249,168,212,0.08) 1.45rem,
+          rgba(249,168,212,0.08) 1.5rem
+        ),
+        white;
+      box-shadow: 0 0 20px rgba(0,0,0,0.08);
+      transform-origin: left center;
+      transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1), box-shadow 0.8s ease;
+      transform-style: preserve-3d;
+      backface-visibility: hidden;
+    }
+
+    .page.flipped {
+      transform: rotateY(-180deg);
+      box-shadow: none;
+      pointer-events: none;
+    }
+
+    .page::before {
+      content: '';
+      position: absolute;
+      left: 2.2rem; top: 0; bottom: 0;
+      width: 1px;
+      background: rgba(249,168,212,0.12);
+      z-index: 1;
+    }
+
+    .bookmark {
+      position: absolute;
+      top: -4px; right: 1.5rem;
+      width: 1.1rem; height: 3rem;
+      background: linear-gradient(to bottom, #f67eb9, #ec4899);
+      z-index: 10;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+      opacity: 0.7;
+    }
+
+    .page-curl {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 2rem; height: 2rem;
+      background: linear-gradient(135deg, transparent 50%, #f8f0f4 50%, #fdf2f8);
+      border-radius: 0 0 1.8rem 0;
+      z-index: 5;
+    }
+
+    .page-content {
+      position: relative;
+      width: 100%; height: 100%;
+      padding: 1.2rem 1.3rem 1.2rem 2.8rem;
+      display: flex;
+      flex-direction: column;
+      color: #5a2d3f;
+      overflow-y: auto;
+      z-index: 2;
+    }
+
+    .date-stamp {
+      text-align: right;
+      font-family: 'Caveat', cursive;
+      font-size: 0.8rem;
+      color: rgba(160,96,126,0.4);
+      margin-bottom: 0.2rem;
+    }
+
+
+
+    .name-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+    }
+    .name-input {
+      width: 85%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.3rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { border-color: #ec4899; }
+    .name-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .country-autocomplete {
+      position: relative; width: 85%;
+    }
+    .country-typeahead {
+      width: 100%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.3rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
+    }
+    .country-typeahead:focus { border-color: #ec4899; }
+    .country-typeahead::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .country-dropdown {
+      position: absolute; left: 0; right: 0; top: 100%;
+      max-height: 10rem; overflow-y: auto;
+      background: white; border-radius: 0 0 0.6rem 0.6rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      z-index: 60; display: none;
+    }
+    .country-dropdown.open { display: block; }
+    .country-option {
+      padding: 0.4rem 0.6rem; font-size: 1rem;
+      font-family: 'Caveat', cursive; color: #5a2d3f;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .country-option:hover, .country-option.active {
+      background: #fdf2f8; color: #8B1E47;
+    }
+    .anon-text {
+      font-family: 'Caveat', cursive; font-size: 1rem;
+      color: #c084a0; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .anon-text:hover { color: #8B1E47; }
+
+    /* Auth step */
+    .auth-area {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.7rem; width: 100%;
+    }
+    .auth-title {
+      font-family: 'Caveat', cursive; font-size: 1.6rem;
+      color: #8B1E47; font-weight: 700;
+    }
+    .auth-input {
+      width: 85%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.1rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
+    }
+    .auth-input:focus { border-color: #ec4899; }
+    .auth-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .auth-toggle {
+      font-family: 'Caveat', cursive; font-size: 0.9rem;
+      color: #c084a0; cursor: pointer; transition: color 0.2s;
+    }
+    .auth-toggle:hover { color: #8B1E47; }
+    .auth-error {
+      font-family: 'Caveat', cursive; font-size: 0.85rem;
+      color: #ef4444; min-height: 1.2rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1.2rem; border-radius: 0.6rem; border: none;
+      font-family: 'Nunito Sans', sans-serif; font-size: 0.7rem;
+      font-weight: 900; letter-spacing: 0.06em;
+      text-transform: uppercase; cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: #f67eb9; color: white; box-shadow: 0 2px 8px rgba(244,114,182,0.3); }
+    .btn-ghost { background: transparent; color: #a0607e; border: 1.5px solid rgba(249,168,212,0.3); }
+    .btn-submit { background: #8B1E47; color: white; box-shadow: 0 2px 8px rgba(139,30,71,0.3); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+    /* Welcome step */
+    .welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: flex-start; justify-content: flex-start;
+      text-align: left; gap: 0.2rem;
+    }
+    .welcome-title {
+      font-family: 'Caveat', cursive; font-size: 1.5rem;
+      color: #8B1E47; font-weight: 700; line-height: 1.3;
+    }
+    .welcome-section-title {
+      font-family: 'Caveat', cursive; font-size: 1.3rem;
+      color: #8B1E47; font-weight: 700; margin-top: 0.4rem;
+    }
+    .welcome-subtitle {
+      font-size: 0.5rem; color: #a0607e;
+      font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-bottom: 0.3rem;
+    }
+    .question-list {
+      list-style: none; width: 100%;
+      display: flex; flex-direction: column; gap: 0.3rem;
+      flex: 1; overflow-y: auto;
+    }
+    .question-item {
+      display: flex; align-items: flex-start; gap: 0.4rem;
+      padding: 0.35rem 0.4rem; border-radius: 0.5rem;
+      cursor: pointer; transition: background 0.15s;
+      font-family: 'Caveat', cursive; font-size: 0.95rem;
+      color: #5a2d3f; line-height: 1.3;
+    }
+    .question-item:hover { background: rgba(249,168,212,0.1); }
+    .question-item.selected { background: rgba(249,168,212,0.2); }
+    .question-item input[type="checkbox"] {
+      accent-color: #ec4899; margin-top: 0.2rem; flex-shrink: 0;
+    }
+    .welcome-btn { margin-top: 0.4rem; align-self: flex-end; }
+
+    /* Question step */
+    .progress {
+      display: flex; align-items: center; gap: 0.3rem;
+      margin-bottom: 0.4rem;
+    }
+    .progress-bar {
+      flex: 1; height: 2px;
+      background: rgba(249,168,212,0.2);
+      border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: #ec4899;
+      border-radius: 2px; transition: width 0.4s ease;
+    }
+    .progress-text {
+      font-family: 'Caveat', cursive;
+      font-size: 0.7rem; color: #c084a0;
+      font-weight: 600; white-space: nowrap;
+    }
+    .q-label {
+      font-size: 0.6rem; color: #ec4899;
+      font-weight: 900; letter-spacing: 0.08em;
+      text-transform: uppercase; margin-bottom: 0.15rem;
+    }
+    .q-text {
+      font-family: 'Caveat', cursive;
+      font-size: 1.1rem; color: #8B1E47;
+      line-height: 1.35; margin-bottom: 0.35rem; font-weight: 600;
+    }
+    .q-textarea {
+      width: 100%; flex: 1; min-height: 4rem; border: none;
+      padding: 0.3rem 0.15rem; font-family: 'Caveat', cursive;
+      font-size: 1rem; color: #5a2d3f; background: transparent;
+      outline: none; resize: none; line-height: 1.5rem;
+    }
+    .q-textarea::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .q-skip {
+      font-size: 0.65rem; color: #c084a0;
+      cursor: pointer; margin-top: 0.1rem;
+      transition: color 0.15s;
+    }
+    .q-skip:hover { color: #8B1E47; }
+    .nav-row { display: flex; gap: 0.3rem; margin-top: 0.4rem; }
+    .nav-row .btn { flex: 1; }
+
+    /* Thank you step */
+    .thanks {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 0.3rem;
+    }
+    .thanks-ascii { font-size: 2.2rem; }
+    .thanks-title { font-family: 'Caveat', cursive; font-size: 1.4rem; color: #8B1E47; font-weight: 700; }
+    .thanks-text { font-family: 'Caveat', cursive; font-size: 1rem; color: #a0607e; line-height: 1.4; }
+
+
+
+    .no-questions {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 0.4rem;
+    }
+    .no-questions-text {
+      font-family: 'Caveat', cursive; font-size: 1.1rem;
+      color: #a0607e; line-height: 1.5;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    @media (min-width: 1024px) {
+      .book-wrapper { max-width: 30rem; }
+      .book { max-width: 30rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="book-wrapper">
+    <div class="book">
+      <div class="shadow-1"></div>
+      <div class="shadow-2"></div>
+
+      <!-- Page 4: Thank you (bottom-most) -->
+      <div class="page" id="pageThank" style="z-index:1">
+        <div class="page-content">
+          <div class="thanks">
+            <div class="thanks-ascii">*:..｡o○</div>
+            <h2 class="thanks-title">Thank you for reflecting</h2>
+            <p class="thanks-text">Self-Reflection leads to Self-Realization</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 3: Questions -->
+      <div class="page" id="pageQuestion" style="z-index:2">
+        <div class="page-curl"></div>
+        <div class="page-content">
+
+          <div class="progress">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <span class="progress-text" id="progressText"></span>
+          </div>
+          <div class="q-label" id="qNumber"></div>
+          <p class="q-text" id="qText"></p>
+          <textarea class="q-textarea" id="qAnswer" placeholder="write your thoughts here..."></textarea>
+          <span class="q-skip" id="skipBtn">skip</span>
+          <div class="nav-row">
+            <button class="btn btn-ghost" id="prevBtn" disabled>← Back</button>
+            <button class="btn btn-primary" id="nextBtn">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2: Welcome + Question Selection -->
+      <div class="page" id="pageWelcome" style="z-index:3">
+        <div class="page-curl"></div>
+        <div class="page-content">
+          <div class="welcome">
+            <h2 class="welcome-title" id="welcomeTitle"></h2>
+            <div class="welcome-section-title">Questions</div>
+            <p class="welcome-subtitle">choose the question or questions that resonate with you</p>
+            <ul class="question-list" id="questionList"></ul>
+            <button class="btn btn-primary welcome-btn" id="welcomeBtn" disabled>Let's Begin →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 1: Name -->
+      <div class="page" id="pageName" style="z-index:4">
+        <div class="page-curl"></div>
+        <div class="page-content">
+          <div class="date-stamp" id="dateStamp"></div>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1">
+            <div class="name-area">
+              <input type="text" class="name-input" id="nameInput" placeholder="your name..." autocomplete="off" />
+              <div class="country-autocomplete">
+                <input type="text" class="country-typeahead" id="countryTypeahead" placeholder="your country..." autocomplete="off" />
+                <div class="country-dropdown" id="countryDropdown"></div>
+              </div>
+              <button class="btn btn-primary" id="nameGoBtn">Continue →</button>
+              <span class="anon-text" id="anonBtn">stay anonymous</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 0: Auth (top-most) -->
+      <div class="page" id="pageAuth" style="z-index:5">
+        <div class="bookmark"></div>
+        <div class="page-curl"></div>
+        <div class="page-content">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1">
+            <div class="auth-area">
+              <h2 class="auth-title" id="authTitle">Sign In</h2>
+              <input type="email" class="auth-input" id="authEmail" placeholder="email..." autocomplete="email" />
+              <input type="password" class="auth-input" id="authPassword" placeholder="password..." autocomplete="current-password" />
+              <p class="auth-error" id="authError"></p>
+              <button class="btn btn-primary" id="authBtn">Sign In →</button>
+              <span class="auth-toggle" id="authToggle">don't have an account? sign up</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rings">
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        <div class="ring"></div><div class="ring"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // ── Fallback questions (used when API is unreachable) ──
+    const FALLBACK_QUESTIONS = [
+      'Do I miss the world before AI?',
+      'Do I think AI is more likely to unite or divide humanity?',
+      'What role do I want AI to play in my life long-term — and what role do I not want it to take?',
+      'Have I ever felt genuinely threatened by AI? When? Why?',
+      'Am I using AI to enhance my thinking, or to avoid it?'
+    ];
+
+    // ── State ──
+    let allQuestions = [];
+    let questions = [];
+    let answers = [];
+    let current = 0;
+    let userName = 'Anonymous';
+    let countryCode = '';
+    let countryName = '';
+
+    // ── Helpers ──
+    function codeToFlag(code) {
+      if (!code || code.length !== 2) return '';
+      return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+    }
+
+    // ── Questions loaded after auth ──
+    let questionsReady = Promise.resolve();
+
+    // ── Date ──
+    document.getElementById('dateStamp').textContent =
+      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // ── Country data + typeahead ──
+    const countries = [
+      ['AF','Afghanistan'],['AL','Albania'],['DZ','Algeria'],['AD','Andorra'],['AO','Angola'],
+      ['AG','Antigua and Barbuda'],['AR','Argentina'],['AM','Armenia'],['AU','Australia'],['AT','Austria'],
+      ['AZ','Azerbaijan'],['BS','Bahamas'],['BH','Bahrain'],['BD','Bangladesh'],['BB','Barbados'],
+      ['BY','Belarus'],['BE','Belgium'],['BZ','Belize'],['BJ','Benin'],['BT','Bhutan'],
+      ['BO','Bolivia'],['BA','Bosnia and Herzegovina'],['BW','Botswana'],['BR','Brazil'],['BN','Brunei'],
+      ['BG','Bulgaria'],['BF','Burkina Faso'],['BI','Burundi'],['KH','Cambodia'],['CM','Cameroon'],
+      ['CA','Canada'],['CV','Cape Verde'],['CF','Central African Republic'],['TD','Chad'],['CL','Chile'],
+      ['CN','China'],['CO','Colombia'],['KM','Comoros'],['CG','Congo'],['CD','Congo (DRC)'],
+      ['CR','Costa Rica'],['CI','Ivory Coast'],['HR','Croatia'],['CU','Cuba'],['CY','Cyprus'],
+      ['CZ','Czech Republic'],['DK','Denmark'],['DJ','Djibouti'],['DM','Dominica'],['DO','Dominican Republic'],
+      ['EC','Ecuador'],['EG','Egypt'],['SV','El Salvador'],['GQ','Equatorial Guinea'],['ER','Eritrea'],
+      ['EE','Estonia'],['SZ','Eswatini'],['ET','Ethiopia'],['FJ','Fiji'],['FI','Finland'],
+      ['FR','France'],['GA','Gabon'],['GM','Gambia'],['GE','Georgia'],['DE','Germany'],
+      ['GH','Ghana'],['GR','Greece'],['GD','Grenada'],['GT','Guatemala'],['GN','Guinea'],
+      ['GW','Guinea-Bissau'],['GY','Guyana'],['HT','Haiti'],['HN','Honduras'],['HU','Hungary'],
+      ['IS','Iceland'],['IN','India'],['ID','Indonesia'],['IR','Iran'],['IQ','Iraq'],
+      ['IE','Ireland'],['IL','Israel'],['IT','Italy'],['JM','Jamaica'],['JP','Japan'],
+      ['JO','Jordan'],['KZ','Kazakhstan'],['KE','Kenya'],['KI','Kiribati'],['KP','North Korea'],
+      ['KR','South Korea'],['KW','Kuwait'],['KG','Kyrgyzstan'],['LA','Laos'],['LV','Latvia'],
+      ['LB','Lebanon'],['LS','Lesotho'],['LR','Liberia'],['LY','Libya'],['LI','Liechtenstein'],
+      ['LT','Lithuania'],['LU','Luxembourg'],['MG','Madagascar'],['MW','Malawi'],['MY','Malaysia'],
+      ['MV','Maldives'],['ML','Mali'],['MT','Malta'],['MH','Marshall Islands'],['MR','Mauritania'],
+      ['MU','Mauritius'],['MX','Mexico'],['FM','Micronesia'],['MD','Moldova'],['MC','Monaco'],
+      ['MN','Mongolia'],['ME','Montenegro'],['MA','Morocco'],['MZ','Mozambique'],['MM','Myanmar'],
+      ['NA','Namibia'],['NR','Nauru'],['NP','Nepal'],['NL','Netherlands'],['NZ','New Zealand'],
+      ['NI','Nicaragua'],['NE','Niger'],['NG','Nigeria'],['MK','North Macedonia'],['NO','Norway'],
+      ['OM','Oman'],['PK','Pakistan'],['PW','Palau'],['PS','Palestine'],['PA','Panama'],
+      ['PG','Papua New Guinea'],['PY','Paraguay'],['PE','Peru'],['PH','Philippines'],['PL','Poland'],
+      ['PT','Portugal'],['QA','Qatar'],['RO','Romania'],['RU','Russia'],['RW','Rwanda'],
+      ['KN','Saint Kitts and Nevis'],['LC','Saint Lucia'],['VC','Saint Vincent'],['WS','Samoa'],['SM','San Marino'],
+      ['ST','Sao Tome and Principe'],['SA','Saudi Arabia'],['SN','Senegal'],['RS','Serbia'],['SC','Seychelles'],
+      ['SL','Sierra Leone'],['SG','Singapore'],['SK','Slovakia'],['SI','Slovenia'],['SB','Solomon Islands'],
+      ['SO','Somalia'],['ZA','South Africa'],['SS','South Sudan'],['ES','Spain'],['LK','Sri Lanka'],
+      ['SD','Sudan'],['SR','Suriname'],['SE','Sweden'],['CH','Switzerland'],['SY','Syria'],
+      ['TW','Taiwan'],['TJ','Tajikistan'],['TZ','Tanzania'],['TH','Thailand'],['TL','Timor-Leste'],
+      ['TG','Togo'],['TO','Tonga'],['TT','Trinidad and Tobago'],['TN','Tunisia'],['TR','Turkey'],
+      ['TM','Turkmenistan'],['TV','Tuvalu'],['UG','Uganda'],['UA','Ukraine'],['AE','United Arab Emirates'],
+      ['GB','United Kingdom'],['US','United States'],['UY','Uruguay'],['UZ','Uzbekistan'],['VU','Vanuatu'],
+      ['VA','Vatican City'],['VE','Venezuela'],['VN','Vietnam'],['YE','Yemen'],['ZM','Zambia'],['ZW','Zimbabwe']
+    ];
+
+    const countryTypeahead = document.getElementById('countryTypeahead');
+    const countryDropdown = document.getElementById('countryDropdown');
+    let activeIdx = -1;
+
+    function renderDropdown(matches) {
+      countryDropdown.innerHTML = '';
+      activeIdx = -1;
+      if (!matches.length) { countryDropdown.classList.remove('open'); return; }
+      matches.forEach(([code, name]) => {
+        const div = document.createElement('div');
+        div.className = 'country-option';
+        div.textContent = codeToFlag(code) + '  ' + name;
+        div.addEventListener('mousedown', (e) => { e.preventDefault(); selectCountry(code, name); });
+        countryDropdown.appendChild(div);
+      });
+      countryDropdown.classList.add('open');
+    }
+
+    function selectCountry(code, name) {
+      countryCode = code;
+      countryName = name;
+      countryTypeahead.value = codeToFlag(code) + '  ' + name;
+      countryDropdown.classList.remove('open');
+    }
+
+    countryTypeahead.addEventListener('input', () => {
+      const q = countryTypeahead.value.replace(/[^\w\s]/g, '').trim().toLowerCase();
+      countryCode = ''; countryName = '';
+      if (!q) { countryDropdown.classList.remove('open'); return; }
+      renderDropdown(countries.filter(([, n]) => n.toLowerCase().startsWith(q)).slice(0, 6));
+    });
+    countryTypeahead.addEventListener('keydown', (e) => {
+      const items = countryDropdown.querySelectorAll('.country-option');
+      if (!items.length) return;
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); }
+      else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); items[activeIdx].dispatchEvent(new Event('mousedown')); return; }
+      else return;
+      items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+    });
+    countryTypeahead.addEventListener('blur', () => setTimeout(() => countryDropdown.classList.remove('open'), 150));
+    countryTypeahead.addEventListener('focus', () => { if (countryTypeahead.value && !countryCode) countryTypeahead.dispatchEvent(new Event('input')); });
+
+    // ── Auth ──
+    const pageAuth = document.getElementById('pageAuth');
+    let isSignUp = false;
+
+    document.getElementById('authToggle').addEventListener('click', () => {
+      isSignUp = !isSignUp;
+      document.getElementById('authTitle').textContent = isSignUp ? 'Sign Up' : 'Sign In';
+      document.getElementById('authBtn').textContent = isSignUp ? 'Sign Up →' : 'Sign In →';
+      document.getElementById('authToggle').textContent = isSignUp
+        ? 'already have an account? sign in'
+        : "don't have an account? sign up";
+      document.getElementById('authError').textContent = '';
+    });
+
+    document.getElementById('authBtn').addEventListener('click', doAuth);
+    document.getElementById('authPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') doAuth(); });
+
+    async function doAuth() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.textContent = '';
+
+      if (!email || !password) { errEl.textContent = 'email and password required'; return; }
+
+      try {
+        if (isSignUp) {
+          await API.signUp(email, password);
+        } else {
+          await API.signIn(email, password);
+        }
+        const jwt = await API.getSession();
+        if (!jwt) { errEl.textContent = 'could not get session'; return; }
+
+        // Load questions from DB now that we have a JWT
+        questionsReady = API.getQuestions()
+          .then(rows => { allQuestions = rows.map(q => q.text); })
+          .catch(() => { allQuestions = FALLBACK_QUESTIONS; });
+
+        flipPage(pageAuth);
+      } catch (e) {
+        errEl.textContent = e.message;
+      }
+    }
+
+    // ── Page elements ──
+    const pageName = document.getElementById('pageName');
+    const pageWelcome = document.getElementById('pageWelcome');
+    const pageQuestion = document.getElementById('pageQuestion');
+    const pageThank = document.getElementById('pageThank');
+    const qNumber = document.getElementById('qNumber');
+    const qText = document.getElementById('qText');
+    const qAnswer = document.getElementById('qAnswer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+
+    function flipPage(page) { page.classList.add('flipped'); }
+
+    // ── Welcome page: question selection ──
+    function renderQuestionList() {
+      const list = document.getElementById('questionList');
+      list.innerHTML = '';
+      allQuestions.forEach((q, i) => {
+        const li = document.createElement('li');
+        li.className = 'question-item';
+        li.innerHTML = '<input type="checkbox" data-idx="' + i + '"><span>' + q + '</span>';
+        li.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'INPUT') li.querySelector('input').checked = !li.querySelector('input').checked;
+          li.classList.toggle('selected', li.querySelector('input').checked);
+          document.getElementById('welcomeBtn').disabled = !document.querySelector('.question-item input:checked');
+        });
+        list.appendChild(li);
+      });
+    }
+
+    async function showWelcome(name) {
+      userName = name;
+      document.getElementById('welcomeTitle').textContent = 'Welcome ' + name + ' ' + codeToFlag(countryCode);
+      await questionsReady;
+      renderQuestionList();
+      flipPage(pageName);
+    }
+
+    function startQuestions() {
+      const checked = document.querySelectorAll('.question-item input:checked');
+      questions = [...checked].map(cb => allQuestions[cb.dataset.idx]);
+      answers = new Array(questions.length).fill('');
+      current = 0;
+      flipPage(pageWelcome);
+      if (questions.length > 0) setTimeout(render, 400);
+    }
+
+    // ── Question page: navigation ──
+    function render() {
+      qNumber.textContent = 'question ' + (current + 1);
+      qText.textContent = questions[current];
+      qAnswer.value = answers[current];
+      prevBtn.disabled = current === 0;
+      const last = current === questions.length - 1;
+      nextBtn.textContent = last ? 'Submit ✓' : 'Next →';
+      nextBtn.className = 'btn ' + (last ? 'btn-submit' : 'btn-primary');
+      progressFill.style.width = ((current + 1) / questions.length * 100) + '%';
+      progressText.textContent = (current + 1) + ' / ' + questions.length;
+      qAnswer.focus();
+    }
+
+    function save() { answers[current] = qAnswer.value; }
+
+    function advance() {
+      if (current < questions.length - 1) { current++; render(); }
+      else submit();
+    }
+
+    // ── Submit: send to API, graceful fallback ──
+    async function submit() {
+      save();
+      const payload = {
+        name: userName,
+        country_code: countryCode,
+        country_name: countryName,
+        submitted_at: new Date().toISOString(),
+        answers: questions.map((q, i) => ({ question: q, answer: answers[i] }))
+          .filter(a => a.answer.trim() !== '')
+      };
+
+      flipPage(pageQuestion);
+
+      try {
+        const result = await API.submitReflection(payload);
+        console.log('Saved to DB:', result.response_id);
+      } catch (e) {
+        console.error('Submit failed (response still shown):', e.message);
+      }
+    }
+
+    // ── Event listeners ──
+    document.getElementById('welcomeBtn').addEventListener('click', startQuestions);
+    document.getElementById('nameGoBtn').addEventListener('click', () => { const v = document.getElementById('nameInput').value.trim(); if (v) showWelcome(v); });
+    document.getElementById('nameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const v = e.target.value.trim(); if (v) showWelcome(v); } });
+    document.getElementById('anonBtn').addEventListener('click', () => showWelcome('Anonymous'));
+    document.getElementById('skipBtn').addEventListener('click', () => { answers[current] = ''; advance(); });
+    prevBtn.addEventListener('click', () => { save(); if (current > 0) { current--; render(); } });
+    nextBtn.addEventListener('click', () => { save(); advance(); });
+
+    // ── URL param auto-start ──
+    const urlName = new URLSearchParams(window.location.search).get('name');
+    if (urlName) showWelcome(urlName);
+  </script>
+</body>
+</html>
