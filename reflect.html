@@ -62,7 +62,6 @@
       border: 1px solid rgba(180,130,20,0.5);
     }
 
-    /* Each .page is a flippable sheet */
     .page {
       position: absolute; inset: 0;
       border-radius: 1.8rem;
@@ -81,13 +80,11 @@
       transform-style: preserve-3d;
       backface-visibility: hidden;
     }
-
     .page.flipped {
       transform: rotateY(-180deg);
       box-shadow: none;
       pointer-events: none;
     }
-
     .page::before {
       content: '';
       position: absolute;
@@ -106,6 +103,24 @@
       clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
       opacity: 0.7;
     }
+
+    .user-badge {
+      position: absolute; top: 0.6rem; right: 1.5rem;
+      font-family: 'Caveat', cursive; font-size: 0.85rem;
+      color: #8B1E47; font-weight: 600; z-index: 55;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .user-badge.visible { opacity: 1; }
+
+    .signout-btn {
+      position: absolute; top: 0.6rem; left: 2.8rem;
+      font-family: 'Caveat', cursive; font-size: 0.8rem;
+      color: #c084a0; cursor: pointer; z-index: 55;
+      background: none; border: none; padding: 0;
+      transition: color 0.2s; display: none;
+    }
+    .signout-btn:hover { color: #8B1E47; }
+    .signout-btn.visible { display: block; }
 
     .page-curl {
       position: absolute;
@@ -128,95 +143,11 @@
     }
 
     .date-stamp {
-      text-align: right;
+      text-align: center;
       font-family: 'Caveat', cursive;
       font-size: 0.8rem;
       color: rgba(160,96,126,0.4);
       margin-bottom: 0.2rem;
-    }
-
-
-
-    .name-area {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.8rem;
-      width: 100%;
-    }
-    .name-input {
-      width: 85%; border: none;
-      border-bottom: 2px solid rgba(249,168,212,0.35);
-      padding: 0.5rem 0.2rem; font-size: 1.3rem;
-      font-family: 'Caveat', cursive; text-align: center;
-      outline: none; background: transparent; color: #5a2d3f;
-      transition: border-color 0.2s;
-    }
-    .name-input:focus { border-color: #ec4899; }
-    .name-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
-    .country-autocomplete {
-      position: relative; width: 85%;
-    }
-    .country-typeahead {
-      width: 100%; border: none;
-      border-bottom: 2px solid rgba(249,168,212,0.35);
-      padding: 0.5rem 0.2rem; font-size: 1.3rem;
-      font-family: 'Caveat', cursive; text-align: center;
-      outline: none; background: transparent; color: #5a2d3f;
-      transition: border-color 0.2s;
-    }
-    .country-typeahead:focus { border-color: #ec4899; }
-    .country-typeahead::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
-    .country-dropdown {
-      position: absolute; left: 0; right: 0; top: 100%;
-      max-height: 10rem; overflow-y: auto;
-      background: white; border-radius: 0 0 0.6rem 0.6rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-      z-index: 60; display: none;
-    }
-    .country-dropdown.open { display: block; }
-    .country-option {
-      padding: 0.4rem 0.6rem; font-size: 1rem;
-      font-family: 'Caveat', cursive; color: #5a2d3f;
-      cursor: pointer; transition: background 0.1s;
-    }
-    .country-option:hover, .country-option.active {
-      background: #fdf2f8; color: #8B1E47;
-    }
-    .anon-text {
-      font-family: 'Caveat', cursive; font-size: 1rem;
-      color: #c084a0; cursor: pointer;
-      transition: color 0.2s;
-    }
-    .anon-text:hover { color: #8B1E47; }
-
-    /* Auth step */
-    .auth-area {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 0.7rem; width: 100%;
-    }
-    .auth-title {
-      font-family: 'Caveat', cursive; font-size: 1.6rem;
-      color: #8B1E47; font-weight: 700;
-    }
-    .auth-input {
-      width: 85%; border: none;
-      border-bottom: 2px solid rgba(249,168,212,0.35);
-      padding: 0.5rem 0.2rem; font-size: 1.1rem;
-      font-family: 'Caveat', cursive; text-align: center;
-      outline: none; background: transparent; color: #5a2d3f;
-      transition: border-color 0.2s;
-    }
-    .auth-input:focus { border-color: #ec4899; }
-    .auth-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
-    .auth-toggle {
-      font-family: 'Caveat', cursive; font-size: 0.9rem;
-      color: #c084a0; cursor: pointer; transition: color 0.2s;
-    }
-    .auth-toggle:hover { color: #8B1E47; }
-    .auth-error {
-      font-family: 'Caveat', cursive; font-size: 0.85rem;
-      color: #ef4444; min-height: 1.2rem;
     }
 
     .btn {
@@ -232,7 +163,6 @@
     .btn-submit { background: #8B1E47; color: white; box-shadow: 0 2px 8px rgba(139,30,71,0.3); }
     .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
 
-    /* Welcome step */
     .welcome {
       flex: 1; display: flex; flex-direction: column;
       align-items: flex-start; justify-content: flex-start;
@@ -270,7 +200,6 @@
     }
     .welcome-btn { margin-top: 0.4rem; align-self: flex-end; }
 
-    /* Question step */
     .progress {
       display: flex; align-items: center; gap: 0.3rem;
       margin-bottom: 0.4rem;
@@ -315,7 +244,6 @@
     .nav-row { display: flex; gap: 0.3rem; margin-top: 0.4rem; }
     .nav-row .btn { flex: 1; }
 
-    /* Thank you step */
     .thanks {
       flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -325,17 +253,82 @@
     .thanks-title { font-family: 'Caveat', cursive; font-size: 1.4rem; color: #8B1E47; font-weight: 700; }
     .thanks-text { font-family: 'Caveat', cursive; font-size: 1rem; color: #a0607e; line-height: 1.4; }
 
-
-
-    .no-questions {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; gap: 0.4rem;
+    .country-autocomplete { position: relative; width: 85%; }
+    .country-typeahead {
+      width: 100%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.3rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
     }
-    .no-questions-text {
-      font-family: 'Caveat', cursive; font-size: 1.1rem;
-      color: #a0607e; line-height: 1.5;
+    .country-typeahead:focus { border-color: #ec4899; }
+    .country-typeahead::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .country-dropdown {
+      position: absolute; left: 0; right: 0; top: 100%;
+      max-height: 10rem; overflow-y: auto;
+      background: white; border-radius: 0 0 0.6rem 0.6rem;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      z-index: 60; display: none;
     }
+    .country-dropdown.open { display: block; }
+    .country-option {
+      padding: 0.4rem 0.6rem; font-size: 1rem;
+      font-family: 'Caveat', cursive; color: #5a2d3f;
+      cursor: pointer; transition: background 0.1s;
+    }
+    .country-option:hover, .country-option.active {
+      background: #fdf2f8; color: #8B1E47;
+    }
+
+    .name-area {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.8rem; width: 100%;
+    }
+    .name-input {
+      width: 85%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.3rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { border-color: #ec4899; }
+    .name-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .anon-text {
+      font-family: 'Caveat', cursive; font-size: 1rem;
+      color: #c084a0; cursor: pointer; transition: color 0.2s;
+    }
+    .anon-text:hover { color: #8B1E47; }
+
+    .auth-area {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.7rem; width: 100%;
+    }
+    .auth-title {
+      font-family: 'Caveat', cursive; font-size: 1.6rem;
+      color: #8B1E47; font-weight: 700;
+    }
+    .auth-input {
+      width: 85%; border: none;
+      border-bottom: 2px solid rgba(249,168,212,0.35);
+      padding: 0.5rem 0.2rem; font-size: 1.1rem;
+      font-family: 'Caveat', cursive; text-align: center;
+      outline: none; background: transparent; color: #5a2d3f;
+      transition: border-color 0.2s;
+    }
+    .auth-input:focus { border-color: #ec4899; }
+    .auth-input::placeholder { color: #dba8c4; font-family: 'Caveat', cursive; }
+    .auth-toggle {
+      font-family: 'Caveat', cursive; font-size: 0.9rem;
+      color: #c084a0; cursor: pointer; transition: color 0.2s;
+    }
+    .auth-toggle:hover { color: #8B1E47; }
+    .auth-error {
+      font-family: 'Caveat', cursive; font-size: 0.85rem;
+      color: #ef4444; min-height: 1.2rem;
+    }
+
 
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -355,22 +348,44 @@
       <div class="shadow-1"></div>
       <div class="shadow-2"></div>
 
-      <!-- Page 4: Thank you (bottom-most) -->
+      <button class="signout-btn" id="signoutBtn" onclick="doSignOut()">sign out</button>
+      <div class="user-badge" id="userBadge"></div>
+
+      <!-- Page 5: Thank You (bottom-most) -->
       <div class="page" id="pageThank" style="z-index:1">
         <div class="page-content">
           <div class="thanks">
             <div class="thanks-ascii">*:..｡o○</div>
-            <h2 class="thanks-title">Thank you for reflecting</h2>
+            <h2 class="thanks-title" id="thanksTitle">Thank you for reflecting</h2>
             <p class="thanks-text">Self-Reflection leads to Self-Realization</p>
+            <a href="googlemaps.html" class="btn btn-primary" style="margin-top:0.8rem;text-decoration:none">See Community Answers 🌍</a>
+            <span class="q-skip" style="margin-top:0.4rem;cursor:pointer" id="reflectAgainBtn">← reflect again</span>
           </div>
         </div>
       </div>
 
-      <!-- Page 3: Questions -->
-      <div class="page" id="pageQuestion" style="z-index:2">
+      <!-- Page 4: Auth (shown only at submit time) -->
+      <div class="page" id="pageAuth" style="z-index:2">
         <div class="page-curl"></div>
         <div class="page-content">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1">
+            <div class="auth-area">
+              <h2 class="auth-title" id="authTitle">Save to Your Account</h2>
+              <input type="email" class="auth-input" id="authEmail" placeholder="email..." autocomplete="email" />
+              <input type="password" class="auth-input" id="authPassword" placeholder="password..." autocomplete="current-password" />
+              <p class="auth-error" id="authError"></p>
+              <button class="btn btn-submit" id="authBtn">Sign Up & Save →</button>
+              <span class="auth-toggle" id="authToggle">already have an account? sign in</span>
+              <span class="q-skip" id="authSkipBtn">save without account</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Page 2: Questions -->
+      <div class="page" id="pageQuestion" style="z-index:3">
+        <div class="page-curl"></div>
+        <div class="page-content">
           <div class="progress">
             <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
             <span class="progress-text" id="progressText"></span>
@@ -386,12 +401,15 @@
         </div>
       </div>
 
-      <!-- Page 2: Welcome + Question Selection -->
-      <div class="page" id="pageWelcome" style="z-index:3">
+      <!-- Page 1: Welcome + Question Selection -->
+      <div class="page" id="pageWelcome" style="z-index:4">
+        <div class="bookmark"></div>
         <div class="page-curl"></div>
         <div class="page-content">
+          <div class="date-stamp" id="dateStamp"></div>
           <div class="welcome">
             <h2 class="welcome-title" id="welcomeTitle"></h2>
+            <div id="debugEmail" style="font-size:0.55rem;color:#ec4899;font-family:'Caveat',cursive;"></div>
             <div class="welcome-section-title">Questions</div>
             <p class="welcome-subtitle">choose the question or questions that resonate with you</p>
             <ul class="question-list" id="questionList"></ul>
@@ -400,38 +418,20 @@
         </div>
       </div>
 
-      <!-- Page 1: Name -->
-      <div class="page" id="pageName" style="z-index:4">
+      <!-- Page 0: Name + Country (top-most, first visible) -->
+      <div class="page" id="pageName" style="z-index:5">
         <div class="page-curl"></div>
         <div class="page-content">
-          <div class="date-stamp" id="dateStamp"></div>
+          <div class="date-stamp" id="dateStampName"></div>
           <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1">
             <div class="name-area">
               <input type="text" class="name-input" id="nameInput" placeholder="your name..." autocomplete="off" />
-              <div class="country-autocomplete">
-                <input type="text" class="country-typeahead" id="countryTypeahead" placeholder="your country..." autocomplete="off" />
-                <div class="country-dropdown" id="countryDropdown"></div>
+              <div class="country-autocomplete" id="nameCountryWrap">
+                <input type="text" class="country-typeahead" id="nameCountryTypeahead" placeholder="🇩🇪  Germany (tap to change)" autocomplete="off" />
+                <div class="country-dropdown" id="nameCountryDropdown"></div>
               </div>
               <button class="btn btn-primary" id="nameGoBtn">Continue →</button>
               <span class="anon-text" id="anonBtn">stay anonymous</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Page 0: Auth (top-most) -->
-      <div class="page" id="pageAuth" style="z-index:5">
-        <div class="bookmark"></div>
-        <div class="page-curl"></div>
-        <div class="page-content">
-          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1">
-            <div class="auth-area">
-              <h2 class="auth-title" id="authTitle">Sign In</h2>
-              <input type="email" class="auth-input" id="authEmail" placeholder="email..." autocomplete="email" />
-              <input type="password" class="auth-input" id="authPassword" placeholder="password..." autocomplete="current-password" />
-              <p class="auth-error" id="authError"></p>
-              <button class="btn btn-primary" id="authBtn">Sign In →</button>
-              <span class="auth-toggle" id="authToggle">don't have an account? sign up</span>
             </div>
           </div>
         </div>
@@ -447,9 +447,10 @@
     </div>
   </div>
 
+  <script src="js/header.js"></script>
   <script src="js/api.js"></script>
   <script>
-    // ── Fallback questions (used when API is unreachable) ──
+    // ── Fallback questions ──
     const FALLBACK_QUESTIONS = [
       'Do I miss the world before AI?',
       'Do I think AI is more likely to unite or divide humanity?',
@@ -464,23 +465,18 @@
     let answers = [];
     let current = 0;
     let userName = 'Anonymous';
-    let countryCode = '';
-    let countryName = '';
+    let countryCode = 'DE';
+    let countryName = 'Germany';
+    let isSignUp = true;
 
     // ── Helpers ──
     function codeToFlag(code) {
       if (!code || code.length !== 2) return '';
       return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
     }
+    function flipPage(page) { page.classList.add('flipped'); }
 
-    // ── Questions loaded after auth ──
-    let questionsReady = Promise.resolve();
-
-    // ── Date ──
-    document.getElementById('dateStamp').textContent =
-      new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    // ── Country data + typeahead ──
+    // ── Countries ──
     const countries = [
       ['AF','Afghanistan'],['AL','Albania'],['DZ','Algeria'],['AD','Andorra'],['AO','Angola'],
       ['AG','Antigua and Barbuda'],['AR','Argentina'],['AM','Armenia'],['AU','Australia'],['AT','Austria'],
@@ -523,57 +519,207 @@
       ['VA','Vatican City'],['VE','Venezuela'],['VN','Vietnam'],['YE','Yemen'],['ZM','Zambia'],['ZW','Zimbabwe']
     ];
 
-    const countryTypeahead = document.getElementById('countryTypeahead');
-    const countryDropdown = document.getElementById('countryDropdown');
-    let activeIdx = -1;
+    // ── DOM refs ──
+    const pageName = document.getElementById('pageName');
+    const pageWelcome = document.getElementById('pageWelcome');
+    const pageQuestion = document.getElementById('pageQuestion');
+    const pageAuth = document.getElementById('pageAuth');
+    const pageThank = document.getElementById('pageThank');
+    const qNumber = document.getElementById('qNumber');
+    const qText = document.getElementById('qText');
+    const qAnswer = document.getElementById('qAnswer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
 
-    function renderDropdown(matches) {
-      countryDropdown.innerHTML = '';
-      activeIdx = -1;
-      if (!matches.length) { countryDropdown.classList.remove('open'); return; }
+    // ── Date stamps ──
+    const dateStr = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('dateStampName').textContent = dateStr;
+    document.getElementById('dateStamp').textContent = dateStr;
+
+    // ── Name page country typeahead ──
+    const nameCountryInput = document.getElementById('nameCountryTypeahead');
+    const nameCountryDD = document.getElementById('nameCountryDropdown');
+    let nameActiveIdx = -1;
+
+    nameCountryInput.addEventListener('input', () => {
+      const q = nameCountryInput.value.replace(/[^\w\s]/g, '').trim().toLowerCase();
+      countryCode = ''; countryName = '';
+      if (!q) { nameCountryDD.classList.remove('open'); return; }
+      const matches = countries.filter(([, n]) => n.toLowerCase().startsWith(q)).slice(0, 6);
+      nameCountryDD.innerHTML = ''; nameActiveIdx = -1;
+      if (!matches.length) { nameCountryDD.classList.remove('open'); return; }
       matches.forEach(([code, name]) => {
         const div = document.createElement('div');
         div.className = 'country-option';
         div.textContent = codeToFlag(code) + '  ' + name;
-        div.addEventListener('mousedown', (e) => { e.preventDefault(); selectCountry(code, name); });
-        countryDropdown.appendChild(div);
+        div.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          countryCode = code; countryName = name;
+          nameCountryInput.value = codeToFlag(code) + '  ' + name;
+          nameCountryDD.classList.remove('open');
+        });
+        nameCountryDD.appendChild(div);
       });
-      countryDropdown.classList.add('open');
-    }
-
-    function selectCountry(code, name) {
-      countryCode = code;
-      countryName = name;
-      countryTypeahead.value = codeToFlag(code) + '  ' + name;
-      countryDropdown.classList.remove('open');
-    }
-
-    countryTypeahead.addEventListener('input', () => {
-      const q = countryTypeahead.value.replace(/[^\w\s]/g, '').trim().toLowerCase();
-      countryCode = ''; countryName = '';
-      if (!q) { countryDropdown.classList.remove('open'); return; }
-      renderDropdown(countries.filter(([, n]) => n.toLowerCase().startsWith(q)).slice(0, 6));
+      nameCountryDD.classList.add('open');
     });
-    countryTypeahead.addEventListener('keydown', (e) => {
-      const items = countryDropdown.querySelectorAll('.country-option');
+    nameCountryInput.addEventListener('keydown', (e) => {
+      const items = nameCountryDD.querySelectorAll('.country-option');
       if (!items.length) return;
-      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, items.length - 1); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); }
-      else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); items[activeIdx].dispatchEvent(new Event('mousedown')); return; }
+      if (e.key === 'ArrowDown') { e.preventDefault(); nameActiveIdx = Math.min(nameActiveIdx + 1, items.length - 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); nameActiveIdx = Math.max(nameActiveIdx - 1, 0); }
+      else if (e.key === 'Enter' && nameActiveIdx >= 0) { e.preventDefault(); items[nameActiveIdx].dispatchEvent(new Event('mousedown')); return; }
       else return;
-      items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
+      items.forEach((el, i) => el.classList.toggle('active', i === nameActiveIdx));
     });
-    countryTypeahead.addEventListener('blur', () => setTimeout(() => countryDropdown.classList.remove('open'), 150));
-    countryTypeahead.addEventListener('focus', () => { if (countryTypeahead.value && !countryCode) countryTypeahead.dispatchEvent(new Event('input')); });
+    nameCountryInput.addEventListener('blur', () => setTimeout(() => nameCountryDD.classList.remove('open'), 150));
 
-    // ── Auth ──
-    const pageAuth = document.getElementById('pageAuth');
-    let isSignUp = false;
+    function showUserBadge(name, cc) {
+      const badge = document.getElementById('userBadge');
+      badge.textContent = codeToFlag(cc) + ' ' + name;
+      badge.classList.add('visible');
+    }
 
+    // ── Name page actions ──
+    function goToWelcome(name) {
+      userName = name;
+      sessionStorage.setItem('reflectName', name);
+      sessionStorage.setItem('reflectCC', countryCode);
+      sessionStorage.setItem('reflectCN', countryName);
+      showUserBadge(name, countryCode);
+      document.getElementById('welcomeTitle').textContent = 'Welcome ' + name + ' ' + codeToFlag(countryCode);
+      flipPage(pageName);
+    }
+
+    document.getElementById('nameGoBtn').addEventListener('click', () => {
+      const v = document.getElementById('nameInput').value.trim();
+      if (v) goToWelcome(v);
+    });
+    document.getElementById('nameInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { const v = e.target.value.trim(); if (v) goToWelcome(v); }
+    });
+    document.getElementById('anonBtn').addEventListener('click', () => goToWelcome('Anonymous'));
+
+
+    // ── Welcome page ──
+    function renderQuestionList() {
+      const list = document.getElementById('questionList');
+      list.innerHTML = '';
+      allQuestions.forEach((q, i) => {
+        const li = document.createElement('li');
+        li.className = 'question-item';
+        li.innerHTML = '<input type="checkbox" data-idx="' + i + '"><span>' + q + '</span>';
+        li.addEventListener('click', (e) => {
+          if (e.target.tagName !== 'INPUT') li.querySelector('input').checked = !li.querySelector('input').checked;
+          li.classList.toggle('selected', li.querySelector('input').checked);
+          document.getElementById('welcomeBtn').disabled = !document.querySelector('.question-item input:checked');
+        });
+        list.appendChild(li);
+      });
+    }
+
+    function startQuestions() {
+      const checked = document.querySelectorAll('.question-item input:checked');
+      questions = [...checked].map(cb => allQuestions[cb.dataset.idx]);
+      answers = new Array(questions.length).fill('');
+      current = 0;
+      flipPage(pageWelcome);
+      if (questions.length > 0) setTimeout(render, 400);
+    }
+
+    // ── Question page ──
+    function render() {
+      qNumber.textContent = 'question ' + (current + 1);
+      qText.textContent = questions[current];
+      qAnswer.value = answers[current];
+      prevBtn.disabled = current === 0;
+      const last = current === questions.length - 1;
+      nextBtn.textContent = last ? 'Submit \u2713' : 'Next \u2192';
+      nextBtn.className = 'btn ' + (last ? 'btn-submit' : 'btn-primary');
+      progressFill.style.width = ((current + 1) / questions.length * 100) + '%';
+      progressText.textContent = (current + 1) + ' / ' + questions.length;
+      qAnswer.focus();
+    }
+
+    function save() { answers[current] = qAnswer.value; }
+
+    function advance() {
+      if (current < questions.length - 1) { current++; render(); }
+      else { save(); submit(); }
+    }
+
+    // ── Submit (with auth check) ──
+    const SERVICE_EMAIL = 'agenticinbox33@gmail.com';
+
+    function isRealUser(jwt) {
+      if (!jwt) return false;
+      try {
+        const p = JSON.parse(atob(jwt.split('.')[1]));
+        return p.email !== SERVICE_EMAIL;
+      } catch(e) { return false; }
+    }
+
+    async function submit() {
+      let jwt = null;
+      try { jwt = await API.getSession(); } catch(e) {}
+
+      if (localStorage.getItem('signedOut') || !isRealUser(jwt)) {
+        // User signed out or no real session — show auth page
+        flipPage(pageQuestion);
+        return;
+      }
+
+      showThankYou();
+    }
+
+    function showThankYou() {
+      // Flip all remaining pages to reveal thank-you
+      [pageQuestion, pageAuth].forEach(p => {
+        if (!p.classList.contains('flipped')) flipPage(p);
+      });
+
+      // Show who submitted
+      let sessionInfo = '';
+      try {
+        const jwt = API.hasJWT();
+        if (jwt) {
+          const raw = typeof jwt === 'string' ? jwt : null;
+        }
+      } catch(e) {}
+      API.getSession().then(j => {
+        if (j) {
+          try {
+            const p = JSON.parse(atob(j.split('.')[1]));
+            sessionInfo = p.email || 'no email';
+            console.log('Submitted as:', sessionInfo, 'isRealUser:', isRealUser(j));
+          } catch(e) {}
+        } else {
+          console.log('Submitted with NO JWT');
+        }
+      }).catch(() => {});
+
+      document.getElementById('thanksTitle').textContent = 'Thank you ' + userName + ' ' + codeToFlag(countryCode);
+
+      // Fire API call in background
+      const payload = {
+        name: userName,
+        country_code: countryCode,
+        country_name: countryName,
+        submitted_at: new Date().toISOString(),
+        answers: questions.map((q, i) => ({ question: q, answer: answers[i] }))
+          .filter(a => a.answer.trim() !== '')
+      };
+      API.submitReflection(payload)
+        .then(r => console.log('Saved to DB:', r))
+        .catch(e => console.error('Submit failed:', e.message, 'JWT:', API.hasJWT()));
+    }
+
+    // ── Auth page logic ──
     document.getElementById('authToggle').addEventListener('click', () => {
       isSignUp = !isSignUp;
-      document.getElementById('authTitle').textContent = isSignUp ? 'Sign Up' : 'Sign In';
-      document.getElementById('authBtn').textContent = isSignUp ? 'Sign Up →' : 'Sign In →';
+      document.getElementById('authTitle').textContent = isSignUp ? 'Save to Your Account' : 'Welcome Back';
+      document.getElementById('authBtn').textContent = isSignUp ? 'Sign Up & Save \u2192' : 'Sign In & Save \u2192';
       document.getElementById('authToggle').textContent = isSignUp
         ? 'already have an account? sign in'
         : "don't have an account? sign up";
@@ -593,128 +739,105 @@
 
       try {
         if (isSignUp) {
-          await API.signUp(email, password);
+          await API.signUp(email, password, userName);
         } else {
           await API.signIn(email, password);
         }
         const jwt = await API.getSession();
         if (!jwt) { errEl.textContent = 'could not get session'; return; }
-
-        // Load questions from DB now that we have a JWT
-        questionsReady = API.getQuestions()
-          .then(rows => { allQuestions = rows.map(q => q.text); })
-          .catch(() => { allQuestions = FALLBACK_QUESTIONS; });
-
-        flipPage(pageAuth);
+        localStorage.removeItem('signedOut');
+        document.getElementById('signoutBtn').classList.add('visible');
+        showUserBadge(userName, countryCode);
+        showThankYou();
       } catch (e) {
         errEl.textContent = e.message;
       }
     }
 
-    // ── Page elements ──
-    const pageName = document.getElementById('pageName');
-    const pageWelcome = document.getElementById('pageWelcome');
-    const pageQuestion = document.getElementById('pageQuestion');
-    const pageThank = document.getElementById('pageThank');
-    const qNumber = document.getElementById('qNumber');
-    const qText = document.getElementById('qText');
-    const qAnswer = document.getElementById('qAnswer');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const progressFill = document.getElementById('progressFill');
-    const progressText = document.getElementById('progressText');
+    // Skip auth — submit without account
+    document.getElementById('authSkipBtn').addEventListener('click', showThankYou);
 
-    function flipPage(page) { page.classList.add('flipped'); }
-
-    // ── Welcome page: question selection ──
-    function renderQuestionList() {
-      const list = document.getElementById('questionList');
-      list.innerHTML = '';
-      allQuestions.forEach((q, i) => {
-        const li = document.createElement('li');
-        li.className = 'question-item';
-        li.innerHTML = '<input type="checkbox" data-idx="' + i + '"><span>' + q + '</span>';
-        li.addEventListener('click', (e) => {
-          if (e.target.tagName !== 'INPUT') li.querySelector('input').checked = !li.querySelector('input').checked;
-          li.classList.toggle('selected', li.querySelector('input').checked);
-          document.getElementById('welcomeBtn').disabled = !document.querySelector('.question-item input:checked');
-        });
-        list.appendChild(li);
-      });
-    }
-
-    async function showWelcome(name) {
-      userName = name;
-      document.getElementById('welcomeTitle').textContent = 'Welcome ' + name + ' ' + codeToFlag(countryCode);
-      await questionsReady;
-      renderQuestionList();
-      flipPage(pageName);
-    }
-
-    function startQuestions() {
-      const checked = document.querySelectorAll('.question-item input:checked');
-      questions = [...checked].map(cb => allQuestions[cb.dataset.idx]);
-      answers = new Array(questions.length).fill('');
+    // ── Reflect Again ──
+    document.getElementById('reflectAgainBtn').addEventListener('click', () => {
+      // Unflip all pages back to Welcome
+      [pageThank, pageAuth, pageQuestion].forEach(p => p.classList.remove('flipped'));
+      // Reset question state but keep name/country
+      questions = [];
+      answers = [];
       current = 0;
-      flipPage(pageWelcome);
-      if (questions.length > 0) setTimeout(render, 400);
-    }
-
-    // ── Question page: navigation ──
-    function render() {
-      qNumber.textContent = 'question ' + (current + 1);
-      qText.textContent = questions[current];
-      qAnswer.value = answers[current];
-      prevBtn.disabled = current === 0;
-      const last = current === questions.length - 1;
-      nextBtn.textContent = last ? 'Submit ✓' : 'Next →';
-      nextBtn.className = 'btn ' + (last ? 'btn-submit' : 'btn-primary');
-      progressFill.style.width = ((current + 1) / questions.length * 100) + '%';
-      progressText.textContent = (current + 1) + ' / ' + questions.length;
-      qAnswer.focus();
-    }
-
-    function save() { answers[current] = qAnswer.value; }
-
-    function advance() {
-      if (current < questions.length - 1) { current++; render(); }
-      else submit();
-    }
-
-    // ── Submit: send to API, graceful fallback ──
-    async function submit() {
-      save();
-      const payload = {
-        name: userName,
-        country_code: countryCode,
-        country_name: countryName,
-        submitted_at: new Date().toISOString(),
-        answers: questions.map((q, i) => ({ question: q, answer: answers[i] }))
-          .filter(a => a.answer.trim() !== '')
-      };
-
-      flipPage(pageQuestion);
-
-      try {
-        const result = await API.submitReflection(payload);
-        console.log('Saved to DB:', result.response_id);
-      } catch (e) {
-        console.error('Submit failed (response still shown):', e.message);
-      }
-    }
+      // Uncheck all questions
+      document.querySelectorAll('.question-item input').forEach(cb => {
+        cb.checked = false;
+        cb.closest('.question-item').classList.remove('selected');
+      });
+      document.getElementById('welcomeBtn').disabled = true;
+    });
 
     // ── Event listeners ──
     document.getElementById('welcomeBtn').addEventListener('click', startQuestions);
-    document.getElementById('nameGoBtn').addEventListener('click', () => { const v = document.getElementById('nameInput').value.trim(); if (v) showWelcome(v); });
-    document.getElementById('nameInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { const v = e.target.value.trim(); if (v) showWelcome(v); } });
-    document.getElementById('anonBtn').addEventListener('click', () => showWelcome('Anonymous'));
     document.getElementById('skipBtn').addEventListener('click', () => { answers[current] = ''; advance(); });
     prevBtn.addEventListener('click', () => { save(); if (current > 0) { current--; render(); } });
     nextBtn.addEventListener('click', () => { save(); advance(); });
 
-    // ── URL param auto-start ──
-    const urlName = new URLSearchParams(window.location.search).get('name');
-    if (urlName) showWelcome(urlName);
+    // ── Init: load questions + check session + restore state ──
+    (async () => {
+      // Check if already signed in
+      try {
+        if (localStorage.getItem('signedOut')) {
+          // User signed out — don't check Neon session
+          document.getElementById('debugEmail').textContent = 'signed out';
+          console.log('Init: signedOut flag active, skipping session');
+        } else {
+          const jwt = await API.getSession();
+          if (jwt) {
+            const payload = JSON.parse(atob(jwt.split('.')[1]));
+            const email = payload.email || 'unknown';
+            const real = isRealUser(jwt);
+            document.getElementById('debugEmail').textContent = 'session: ' + email + (real ? ' (real user)' : ' (service account)');
+            console.log('Init session:', email, 'isRealUser:', real);
+            if (real) {
+              document.getElementById('signoutBtn').classList.add('visible');
+              const authName = payload.name || email.split('@')[0] || '';
+              if (authName) document.getElementById('nameInput').value = authName;
+            }
+          } else {
+            document.getElementById('debugEmail').textContent = 'no session';
+            console.log('Init: no session');
+          }
+        }
+      } catch(e) { console.log('Init session error:', e); }
+
+      // Restore name/country from sessionStorage (returning user)
+      const savedName = sessionStorage.getItem('reflectName');
+      const savedCC = sessionStorage.getItem('reflectCC');
+      const savedCN = sessionStorage.getItem('reflectCN');
+      if (savedName) {
+        document.getElementById('nameInput').value = savedName;
+        if (savedCC) {
+          countryCode = savedCC;
+          countryName = savedCN || savedCC;
+          nameCountryInput.value = codeToFlag(savedCC) + '  ' + (savedCN || savedCC);
+        }
+        showUserBadge(savedName, savedCC || 'DE');
+      }
+
+      try {
+        const qs = await API.getQuestions();
+        allQuestions = qs.map(q => q.text);
+      } catch (e) {
+        allQuestions = FALLBACK_QUESTIONS;
+      }
+      renderQuestionList();
+    })();
+
+    async function doSignOut() {
+      try { await API.signOut(); } catch(e) {}
+      sessionStorage.clear();
+      localStorage.setItem('signedOut', '1');
+      document.getElementById('signoutBtn').classList.remove('visible');
+      document.getElementById('userBadge').classList.remove('visible');
+      window.location.href = 'reflect.html';
+    }
   </script>
 </body>
 </html>
