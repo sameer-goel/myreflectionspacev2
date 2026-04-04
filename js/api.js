@@ -45,8 +45,8 @@ const API = (() => {
 
   return {
     // Auth
-    signUp: (email, password) => authRequest('POST', '/sign-up/email', {
-      email, password, name: email.split('@')[0]
+    signUp: (email, password, name) => authRequest('POST', '/sign-up/email', {
+      email, password, name: name || email.split('@')[0]
     }),
 
     signIn: (email, password) => authRequest('POST', '/sign-in/email', { email, password }),
@@ -56,6 +56,11 @@ const API = (() => {
       const jwt = res.headers.get('set-auth-jwt');
       if (jwt) CONFIG.jwt = jwt;
       return jwt;
+    },
+
+    signOut: async () => {
+      await fetch(AUTH_URL + '/sign-out', { method: 'POST', credentials: 'include' }).catch(() => {});
+      CONFIG.jwt = null;
     },
 
     hasJWT: () => !!CONFIG.jwt,
@@ -72,6 +77,22 @@ const API = (() => {
     }),
 
     getResponses: () => request('GET', DATA_URL + '/responses?order=created_at.desc'),
+
+    getResponsesWithAnswers: async () => {
+      const [responses, answers, questions] = await Promise.all([
+        request('GET', DATA_URL + '/responses?order=created_at.desc'),
+        request('GET', DATA_URL + '/answers'),
+        request('GET', DATA_URL + '/questions?order=order.asc')
+      ]);
+      const qMap = {};
+      questions.forEach(q => { qMap[q.id] = q.text; });
+      const aMap = {};
+      answers.forEach(a => {
+        if (!aMap[a.response_id]) aMap[a.response_id] = [];
+        aMap[a.response_id].push({ question: qMap[a.question_id] || '', answer: a.answer_text });
+      });
+      return responses.map(r => ({ ...r, answers: aMap[r.id] || [] }));
+    },
 
     deleteResponse: (id) => request('DELETE', DATA_URL + '/responses?id=eq.' + id)
   };
