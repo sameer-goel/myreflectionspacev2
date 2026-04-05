@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Reflection Space — Community Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: #f8fafc;
+      overflow: hidden;
+      width: 100vw; height: 100vh;
+    }
+
+    #map {
+      width: 100%; height: 100%;
+      background: #e8f0f8;
+    }
+
+    /* ── Loading overlay ── */
+    .loading-overlay {
+      position: fixed; inset: 0; z-index: 3000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #fdf2f8;
+      transition: opacity 0.5s ease, visibility 0.5s;
+    }
+    .loading-overlay.done { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loading-spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(139,30,71,0.15);
+      border-top-color: #8B1E47;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+    .loading-text {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.4rem; color: #8B1E47;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Header overlay ── */
+    .header {
+      position: absolute; top: 0; left: 0; z-index: 1000;
+      padding: 1.2rem 1.5rem;
+      pointer-events: none;
+    }
+    .header-card {
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 1rem;
+      padding: 0.9rem 1.2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
+      pointer-events: auto;
+    }
+    .header-title {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.5rem; font-weight: 700;
+      color: #8B1E47; line-height: 1.2;
+    }
+    .header-sub {
+      font-size: 0.65rem; color: #a0607e;
+      font-weight: 600; letter-spacing: 0.02em;
+      margin-top: 0.1rem;
+    }
+    .header-count {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1rem; color: #ec4899;
+      margin-top: 0.25rem; font-weight: 600;
+      min-height: 1.2rem;
+    }
+
+    /* ── Back button ── */
+    .back-link {
+      position: absolute; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      background: white;
+      padding: 0.55rem 1.4rem;
+      border-radius: 2rem;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+      font-size: 0.7rem; font-weight: 800;
+      color: #8B1E47;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .back-link:hover {
+      transform: translateX(-50%) translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+
+    /* ── Pin markers ── */
+    .pin-outer {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .pin-outer:hover { transform: scale(1.15); }
+
+    .pin-marker {
+      width: 34px; height: 34px;
+      background: #8B1E47;
+      border: 2.5px solid white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.72rem; font-weight: 900;
+      color: white;
+      box-shadow:
+        0 2px 6px rgba(139,30,71,0.35),
+        0 4px 12px rgba(0,0,0,0.12);
+      position: relative;
+      z-index: 1;
+    }
+    .pin-marker::after {
+      content: '';
+      position: absolute;
+      bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 7px solid #8B1E47;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+    }
+    .pin-shadow {
+      position: absolute;
+      bottom: -10px; left: 50%;
+      transform: translateX(-50%);
+      width: 20px; height: 6px;
+      background: radial-gradient(ellipse, rgba(0,0,0,0.18), transparent 70%);
+      border-radius: 50%;
+    }
+
+    /* ── Popup (Google Maps card style) ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 0.85rem !important;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.04) !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 280px !important;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+    .leaflet-popup-tip-container { display: none; }
+    .leaflet-popup-close-button {
+      z-index: 10 !important;
+      color: white !important;
+      font-size: 20px !important;
+      top: 6px !important; right: 8px !important;
+      opacity: 0.8;
+    }
+    .leaflet-popup-close-button:hover { opacity: 1; }
+
+    .popup-header {
+      background: linear-gradient(135deg, #8B1E47 0%, #c2365a 100%);
+      padding: 0.85rem 1rem 0.75rem;
+      color: white;
+    }
+    .popup-flag { font-size: 1.6rem; line-height: 1; }
+    .popup-country-name {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.35rem; font-weight: 700;
+      line-height: 1.2; margin-top: 0.15rem;
+    }
+    .popup-count-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 0.15rem 0.55rem;
+      border-radius: 1rem;
+      font-size: 0.6rem; font-weight: 800;
+      letter-spacing: 0.03em;
+      margin-top: 0.35rem;
+    }
+
+    .popup-body {
+      padding: 0.1rem 0;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .popup-body::-webkit-scrollbar { width: 4px; }
+    .popup-body::-webkit-scrollbar-thumb {
+      background: rgba(139,30,71,0.2);
+      border-radius: 4px;
+    }
+
+    .popup-card {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: background 0.15s;
+    }
+    .popup-card:last-child { border-bottom: none; }
+    .popup-card:hover { background: #fdf2f8; }
+
+    .popup-card-header {
+      display: flex; align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+    }
+    .popup-name {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 1.05rem; color: #8B1E47;
+      font-weight: 600;
+    }
+    .popup-date {
+      font-size: 0.55rem; color: #a0607e;
+      font-weight: 600;
+    }
+    .popup-q {
+      font-size: 0.58rem; color: #ec4899;
+      font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 0.2rem; line-height: 1.4;
+    }
+    .popup-a {
+      font-family: 'Patrick Hand', cursive;
+      font-size: 0.9rem; color: #5a2d3f;
+      line-height: 1.35; margin-top: 0.1rem;
+    }
+
+    /* ── Leaflet overrides for clean look ── */
+    .leaflet-control-zoom {
+      border: none !important;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04) !important;
+      border-radius: 0.6rem !important;
+      overflow: hidden;
+    }
+    .leaflet-control-zoom a {
+      width: 36px !important; height: 36px !important;
+      line-height: 36px !important;
+      font-size: 16px !important;
+      color: #444 !important;
+      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+    }
+    .leaflet-control-zoom a:hover {
+      background: #f8f8f8 !important;
+    }
+    .leaflet-control-attribution {
+      font-size: 9px !important;
+      background: rgba(255,255,255,0.7) !important;
+      padding: 2px 6px !important;
+    }
+
+    /* ── Mobile tweaks ── */
+    @media (max-width: 600px) {
+      .header { padding: 0.8rem; }
+      .header-card { padding: 0.7rem 0.9rem; }
+      .header-title { font-size: 1.3rem; }
+      .leaflet-popup-content { width: 260px !important; }
+      .back-link { bottom: 1rem; padding: 0.5rem 1.1rem; font-size: 0.65rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <span class="loading-text">loading reflections...</span>
+  </div>
+
+  <div class="header">
+    <div class="header-card">
+      <h1 class="header-title">Community Reflections</h1>
+      <p class="header-sub">see where the world is reflecting from</p>
+      <p class="header-count" id="headerCount"></p>
+    </div>
+  </div>
+
+  <a href="reflect.html" class="back-link">← back to reflect</a>
+
+  <div id="map"></div>
+
+  <script src="js/api.js"></script>
+  <script>
+    // ── Country coordinates (195 countries) ──
+    const COORDS = {
+      AF:[33,65],AL:[41,20],DZ:[28,3],AD:[42.5,1.5],AO:[-12.5,18.5],AG:[17.05,-61.8],AR:[-34,-64],
+      AM:[40,45],AU:[-27,133],AT:[47.3,13.3],AZ:[40.5,47.5],BS:[24.25,-76],BH:[26,50.5],BD:[24,90],
+      BB:[13.2,-59.5],BY:[53,28],BE:[50.8,4],BZ:[17.25,-88.75],BJ:[9.5,2.25],BT:[27.5,90.5],
+      BO:[-17,-65],BA:[44,18],BW:[-22,24],BR:[-10,-55],BN:[4.5,114.7],BG:[43,25],BF:[13,-2],
+      BI:[-3.5,30],KH:[13,105],CM:[6,12],CA:[60,-95],CV:[16,-24],CF:[7,21],TD:[15,19],CL:[-30,-71],
+      CN:[35,105],CO:[4,-72],KM:[-12.2,44.25],CG:[-1,15],CD:[0,25],CR:[10,-84],CI:[8,-5],HR:[45.2,15.5],
+      CU:[21.5,-80],CY:[35,33],CZ:[49.75,15.5],DK:[56,10],DJ:[11.5,43],DM:[15.4,-61.4],DO:[19,-70.7],
+      EC:[-2,-77.5],EG:[27,30],SV:[13.8,-88.9],GQ:[2,10],ER:[15,39],EE:[59,26],SZ:[-26.5,31.5],
+      ET:[8,38],FJ:[-18,175],FI:[64,26],FR:[46,2],GA:[-1,11.75],GM:[13.5,-16.6],GE:[42,43.5],
+      DE:[51,9],GH:[8,-2],GR:[39,22],GD:[12.1,-61.7],GT:[15.5,-90.25],GN:[11,-10],GW:[12,-15],
+      GY:[5,-59],HT:[19,-72.4],HN:[15,-86.5],HU:[47,20],IS:[65,-18],IN:[20,77],ID:[-5,120],
+      IR:[32,53],IQ:[33,44],IE:[53,-8],IL:[31.5,34.75],IT:[42.8,12.8],JM:[18.25,-77.5],JP:[36,138],
+      JO:[31,36],KZ:[48,68],KE:[1,38],KI:[1.4,173],KP:[40,127],KR:[37,127.5],KW:[29.5,45.75],
+      KG:[41,75],LA:[18,105],LV:[57,25],LB:[33.8,35.8],LS:[-29.5,28.5],LR:[6.5,-9.5],LY:[25,17],
+      LI:[47.3,9.5],LT:[56,24],LU:[49.75,6.2],MG:[-20,47],MW:[-13.5,34],MY:[2.5,112.5],
+      MV:[3.25,73],ML:[17,-4],MT:[35.8,14.6],MH:[9,168],MR:[20,-12],MU:[-20.3,57.6],MX:[23,-102],
+      FM:[6.9,158.2],MD:[47,29],MC:[43.7,7.4],MN:[46,105],ME:[42.5,19.3],MA:[32,-5],MZ:[-18.25,35],
+      MM:[22,98],NA:[-22,17],NR:[-0.5,166.9],NP:[28,84],NL:[52.5,5.75],NZ:[-41,174],NI:[13,-85],
+      NE:[16,8],NG:[10,8],MK:[41.8,22],NO:[62,10],OM:[21,57],PK:[30,70],PW:[7.5,134.5],
+      PS:[31.9,35.2],PA:[9,-80],PG:[-6,147],PY:[-23,-58],PE:[-10,-76],PH:[13,122],PL:[52,20],
+      PT:[39.5,-8],QA:[25.5,51.25],RO:[46,25],RU:[60,100],RW:[-2,30],KN:[17.3,-62.7],
+      LC:[13.9,-61],VC:[13.25,-61.2],WS:[-13.6,-172.3],SM:[43.8,12.4],ST:[1,7],SA:[25,45],
+      SN:[14,-14],RS:[44,21],SC:[-4.6,55.5],SL:[8.5,-11.5],SG:[1.4,103.8],SK:[48.7,19.5],
+      SI:[46.1,14.8],SB:[-8,159],SO:[10,49],ZA:[-29,24],SS:[8,30],ES:[40,-4],LK:[7,81],
+      SD:[15,30],SR:[4,-56],SE:[62,15],CH:[47,8],SY:[35,38],TW:[23.5,121],TJ:[39,71],
+      TZ:[-6,35],TH:[15,100],TL:[-8.55,125.7],TG:[8,1.2],TO:[-20,-175],TT:[11,-61],TN:[34,9],
+      TR:[39,35],TM:[40,60],TV:[-8,178],UG:[1,32],UA:[49,32],AE:[24,54],GB:[54,-2],US:[38,-97],
+      UY:[-33,-56],UZ:[41,64],VU:[-16,167],VA:[41.9,12.45],VE:[8,-66],VN:[16,108],YE:[15,48],
+      ZM:[-15,30],ZW:[-20,30]
+    };
+
+    function codeToFlag(code) {
+      if (!code || code.length !== 2) return '';
+      return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+    }
+
+    // ── Init map ──
+    const map = L.map('map', {
+      zoomControl: false,
+      attributionControl: true,
+      minZoom: 2,
+      maxZoom: 18,
+      worldCopyJump: true
+    }).setView([25, 10], 2);
+
+    // Google Maps-style light tiles (Positron by CARTO)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // ── Build popup HTML ──
+    function buildPopup(code, group) {
+      const flag = codeToFlag(code);
+      const count = group.responses.length;
+
+      let html = '<div class="popup-header">';
+      html += '<div class="popup-flag">' + flag + '</div>';
+      html += '<div class="popup-country-name">' + group.name + '</div>';
+      html += '<div class="popup-count-badge">' + count + ' reflection' + (count !== 1 ? 's' : '') + '</div>';
+      html += '</div>';
+      html += '<div class="popup-body">';
+
+      group.responses.forEach(r => {
+        const date = new Date(r.submitted_at || r.created_at).toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        });
+        html += '<div class="popup-card">';
+        html += '<div class="popup-card-header">';
+        html += '<span class="popup-name">' + (r.respondent_name || 'Anonymous') + '</span>';
+        html += '<span class="popup-date">' + date + '</span>';
+        html += '</div>';
+        if (r.answers && r.answers.length) {
+          r.answers.forEach(a => {
+            html += '<div class="popup-q">' + a.question + '</div>';
+            html += '<div class="popup-a">&ldquo;' + a.answer + '&rdquo;</div>';
+          });
+        }
+        html += '</div>';
+      });
+
+      html += '</div>';
+      return html;
+    }
+
+    // ── Create pin icon ──
+    function createPinIcon(count) {
+      return L.divIcon({
+        className: '',
+        html: '<div class="pin-outer"><div class="pin-marker">' + count + '</div><div class="pin-shadow"></div></div>',
+        iconSize: [34, 46],
+        iconAnchor: [17, 42],
+        popupAnchor: [0, -38]
+      });
+    }
+
+    // ── Animate pins dropping in ──
+    function addPinWithDelay(lat, lon, icon, popupHtml, delay) {
+      setTimeout(() => {
+        const marker = L.marker([lat, lon], { icon, riseOnHover: true }).addTo(map);
+        marker.bindPopup(popupHtml, {
+          maxWidth: 300,
+          minWidth: 280,
+          closeButton: true,
+          className: ''
+        });
+      }, delay);
+    }
+
+    // ── Load data ──
+    async function loadData() {
+      try {
+        let jwt = await API.getSession();
+        if (!jwt) {
+          await API.signIn('agenticinbox33@gmail.com', 'TestPassword123!');
+          jwt = await API.getSession();
+        }
+
+        const responses = await API.getResponsesWithAnswers();
+
+        // Group by country
+        const groups = {};
+        let total = 0;
+
+        responses.forEach(r => {
+          const code = r.country_code;
+          if (!code || !COORDS[code]) return;
+          if (!groups[code]) groups[code] = { name: r.country_name || code, responses: [] };
+          groups[code].responses.push(r);
+          total++;
+        });
+
+        const countryCodes = Object.keys(groups);
+
+        // Update header count
+        document.getElementById('headerCount').textContent =
+          total + ' reflections from ' + countryCodes.length + ' countr' + (countryCodes.length === 1 ? 'y' : 'ies');
+
+        // Add pins with staggered animation
+        countryCodes.forEach((code, i) => {
+          const [lat, lon] = COORDS[code];
+          const count = groups[code].responses.length;
+          const icon = createPinIcon(count);
+          const popupHtml = buildPopup(code, groups[code]);
+          addPinWithDelay(lat, lon, icon, popupHtml, i * 60);
+        });
+
+      } catch (e) {
+        console.error('Failed to load:', e.message);
+        document.getElementById('headerCount').textContent = 'could not load reflections';
+      }
+
+      // Dismiss loading overlay
+      setTimeout(() => {
+        document.getElementById('loading').classList.add('done');
+      }, 300);
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

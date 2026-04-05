@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Reflection Space — Global Reflections</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #0a0a1a; font-family: 'Nunito Sans', sans-serif; }
+
+    #canvas-container { width: 100vw; height: 100vh; cursor: grab; }
+    #canvas-container:active { cursor: grabbing; }
+
+    /* UI overlay */
+    .ui { position: absolute; z-index: 10; pointer-events: none; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; }
+
+    .header-title {
+      font-family: 'Patrick Hand', cursive; font-size: 1.8rem; font-weight: 700;
+      background: linear-gradient(to right, #f9a8d4, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-sub { font-size: 0.7rem; color: #a0607e; margin-top: 0.1rem; }
+    .header-count { font-family: 'Patrick Hand', cursive; font-size: 1rem; color: #c084fc; margin-top: 0.2rem; }
+
+    /* Country pills at bottom */
+    .country-bar { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; pointer-events: all; }
+    .country-pill {
+      flex-shrink: 0; padding: 0.5rem 1rem; border-radius: 1rem;
+      background: rgba(139,30,71,0.3); border: 1px solid rgba(249,168,212,0.2);
+      backdrop-filter: blur(8px); cursor: pointer; transition: all 0.2s;
+    }
+    .country-pill:hover { background: rgba(139,30,71,0.6); border-color: #f9a8d4; transform: translateY(-2px); }
+    .pill-flag { font-size: 1.2rem; }
+    .pill-name { font-size: 0.7rem; color: #f9a8d4; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pill-count { font-family: 'Patrick Hand', cursive; font-size: 0.85rem; color: white; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 50;
+      display: none; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: rgba(15,10,30,0.95); border: 1px solid rgba(249,168,212,0.2);
+      border-radius: 1.5rem; padding: 1.5rem; max-width: 24rem; width: 90%;
+      max-height: 80vh; overflow-y: auto; backdrop-filter: blur(16px);
+      animation: modalIn 0.3s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    .modal-country { font-family: 'Patrick Hand', cursive; font-size: 1.6rem; color: #f9a8d4; font-weight: 700; }
+    .modal-stats { font-size: 0.65rem; color: #a0607e; margin-bottom: 1rem; }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem; background: none; border: none;
+      color: #a0607e; font-size: 1.2rem; cursor: pointer;
+    }
+    .modal-close:hover { color: white; }
+
+    /* Response cards inside modal */
+    .response-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(249,168,212,0.1);
+      border-radius: 0.8rem; padding: 0.8rem; margin-bottom: 0.6rem;
+    }
+    .response-name { font-family: 'Patrick Hand', cursive; font-size: 1.1rem; color: #c084fc; font-weight: 600; }
+    .response-date { font-size: 0.55rem; color: #64748b; }
+    .response-qa { margin-top: 0.4rem; }
+    .response-q { font-size: 0.6rem; color: #f9a8d4; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    .response-a { font-family: 'Patrick Hand', cursive; font-size: 0.95rem; color: #e2e8f0; line-height: 1.4; margin-bottom: 0.3rem; }
+
+    /* Loading */
+    .loading { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: #0a0a1a; }
+    .loading-text { font-family: 'Patrick Hand', cursive; font-size: 1.5rem; color: #f9a8d4; }
+    .loading.done { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+  </style>
+</head>
+<body>
+
+  <div class="loading" id="loading"><span class="loading-text">loading reflections...</span></div>
+
+  <div class="ui">
+    <div>
+      <h1 class="header-title">Reflections Around the World</h1>
+      <p class="header-sub">see what the community is thinking</p>
+      <p class="header-count" id="headerCount"></p>
+    </div>
+    <div class="country-bar" id="countryBar"></div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" style="position:relative">
+      <button class="modal-close" id="modalClose">✕</button>
+      <div class="modal-country" id="modalCountry"></div>
+      <div class="modal-stats" id="modalStats"></div>
+      <div id="modalResponses"></div>
+    </div>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script src="js/header.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // ── Country coordinates (ISO 2-letter → lat/lon) ──
+    const COORDS = {
+      AF:[33,65],AL:[41,20],DZ:[28,3],AD:[42.5,1.5],AO:[-12.5,18.5],AG:[17.05,-61.8],AR:[-34,-64],
+      AM:[40,45],AU:[-27,133],AT:[47.3,13.3],AZ:[40.5,47.5],BS:[24.25,-76],BH:[26,50.5],BD:[24,90],
+      BB:[13.2,-59.5],BY:[53,28],BE:[50.8,4],BZ:[17.25,-88.75],BJ:[9.5,2.25],BT:[27.5,90.5],
+      BO:[-17,-65],BA:[44,18],BW:[-22,24],BR:[-10,-55],BN:[4.5,114.7],BG:[43,25],BF:[13,-2],
+      BI:[-3.5,30],KH:[13,105],CM:[6,12],CA:[60,-95],CV:[16,-24],CF:[7,21],TD:[15,19],CL:[-30,-71],
+      CN:[35,105],CO:[4,-72],KM:[-12.2,44.25],CG:[-1,15],CD:[0,25],CR:[10,-84],CI:[8,-5],HR:[45.2,15.5],
+      CU:[21.5,-80],CY:[35,33],CZ:[49.75,15.5],DK:[56,10],DJ:[11.5,43],DM:[15.4,-61.4],DO:[19,-70.7],
+      EC:[-2,-77.5],EG:[27,30],SV:[13.8,-88.9],GQ:[2,10],ER:[15,39],EE:[59,26],SZ:[-26.5,31.5],
+      ET:[8,38],FJ:[-18,175],FI:[64,26],FR:[46,2],GA:[-1,11.75],GM:[13.5,-16.6],GE:[42,43.5],
+      DE:[51,9],GH:[8,-2],GR:[39,22],GD:[12.1,-61.7],GT:[15.5,-90.25],GN:[11,-10],GW:[12,-15],
+      GY:[5,-59],HT:[19,-72.4],HN:[15,-86.5],HU:[47,20],IS:[65,-18],IN:[20,77],ID:[-5,120],
+      IR:[32,53],IQ:[33,44],IE:[53,-8],IL:[31.5,34.75],IT:[42.8,12.8],JM:[18.25,-77.5],JP:[36,138],
+      JO:[31,36],KZ:[48,68],KE:[1,38],KI:[1.4,173],KP:[40,127],KR:[37,127.5],KW:[29.5,45.75],
+      KG:[41,75],LA:[18,105],LV:[57,25],LB:[33.8,35.8],LS:[-29.5,28.5],LR:[6.5,-9.5],LY:[25,17],
+      LI:[47.3,9.5],LT:[56,24],LU:[49.75,6.2],MG:[-20,47],MW:[-13.5,34],MY:[2.5,112.5],
+      MV:[3.25,73],ML:[17,-4],MT:[35.8,14.6],MH:[9,168],MR:[20,-12],MU:[-20.3,57.6],MX:[23,-102],
+      FM:[6.9,158.2],MD:[47,29],MC:[43.7,7.4],MN:[46,105],ME:[42.5,19.3],MA:[32,-5],MZ:[-18.25,35],
+      MM:[22,98],NA:[-22,17],NR:[-0.5,166.9],NP:[28,84],NL:[52.5,5.75],NZ:[-41,174],NI:[13,-85],
+      NE:[16,8],NG:[10,8],MK:[41.8,22],NO:[62,10],OM:[21,57],PK:[30,70],PW:[7.5,134.5],
+      PS:[31.9,35.2],PA:[9,-80],PG:[-6,147],PY:[-23,-58],PE:[-10,-76],PH:[13,122],PL:[52,20],
+      PT:[39.5,-8],QA:[25.5,51.25],RO:[46,25],RU:[60,100],RW:[-2,30],KN:[17.3,-62.7],
+      LC:[13.9,-61],VC:[13.25,-61.2],WS:[-13.6,-172.3],SM:[43.8,12.4],ST:[1,7],SA:[25,45],
+      SN:[14,-14],RS:[44,21],SC:[-4.6,55.5],SL:[8.5,-11.5],SG:[1.4,103.8],SK:[48.7,19.5],
+      SI:[46.1,14.8],SB:[-8,159],SO:[10,49],ZA:[-29,24],SS:[8,30],ES:[40,-4],LK:[7,81],
+      SD:[15,30],SR:[4,-56],SE:[62,15],CH:[47,8],SY:[35,38],TW:[23.5,121],TJ:[39,71],
+      TZ:[-6,35],TH:[15,100],TL:[-8.55,125.7],TG:[8,1.2],TO:[-20,-175],TT:[11,-61],TN:[34,9],
+      TR:[39,35],TM:[40,60],TV:[-8,178],UG:[1,32],UA:[49,32],AE:[24,54],GB:[54,-2],US:[38,-97],
+      UY:[-33,-56],UZ:[41,64],VU:[-16,167],VA:[41.9,12.45],VE:[8,-66],VN:[16,108],YE:[15,48],
+      ZM:[-15,30],ZW:[-20,30]
+    };
+
+    function codeToFlag(code) {
+      if (!code || code.length !== 2) return '';
+      return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65)).join('');
+    }
+
+    // ── Three.js setup ──
+    let scene, camera, renderer, globe, stars;
+    let isDragging = false, prevMouse = { x: 0, y: 0 };
+    let rotSpeed = 0.001, isFlying = false;
+    let targetRotX = 0, targetRotY = 0;
+    const RADIUS = 100;
+    let countryGroups = {};
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 2000);
+      camera.position.z = 350;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.setPixelRatio(devicePixelRatio);
+      document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const sun = new THREE.DirectionalLight(0xffffff, 0.5);
+      sun.position.set(5, 3, 5);
+      scene.add(sun);
+
+      const loader = new THREE.TextureLoader();
+      const earthTex = loader.load('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg');
+      const bumpTex = loader.load('https://unpkg.com/three-globe/example/img/earth-topology.png');
+
+      globe = new THREE.Mesh(
+        new THREE.SphereGeometry(RADIUS, 64, 64),
+        new THREE.MeshPhongMaterial({ map: earthTex, bumpMap: bumpTex, bumpScale: 2, shininess: 5 })
+      );
+      scene.add(globe);
+
+      // Stars
+      const starGeo = new THREE.BufferGeometry();
+      const verts = [];
+      for (let i = 0; i < 5000; i++) verts.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);
+      starGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5 }));
+      scene.add(stars);
+
+      setupControls();
+    }
+
+    function latLonToVec(lat, lon, r) {
+      const phi = (90 - lat) * Math.PI / 180;
+      const theta = (lon + 180) * Math.PI / 180;
+      return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta));
+    }
+
+    function addMarker(lat, lon, count) {
+      const pos = latLonToVec(lat, lon, RADIUS);
+      const size = Math.min(1 + count * 0.4, 4);
+
+      // Glowing dot
+      const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(size, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xf9a8d4 })
+      );
+      dot.position.copy(pos);
+      globe.add(dot);
+
+      // Pulse ring
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(size + 0.5, size + 1, 32),
+        new THREE.MeshBasicMaterial({ color: 0xc084fc, side: THREE.DoubleSide, transparent: true, opacity: 0.3 })
+      );
+      ring.position.copy(pos);
+      ring.lookAt(0, 0, 0);
+      globe.add(ring);
+    }
+
+    function flyTo(code) {
+      const coords = COORDS[code];
+      if (!coords) return;
+      closeModal();
+      isFlying = true;
+      rotSpeed = 0;
+
+      // Rotate Y to face country's longitude, gentle X tilt for latitude
+      targetRotY = -coords[1] * Math.PI / 180;
+      targetRotX = Math.max(-0.5, Math.min(0.5, -coords[0] * Math.PI / 360));
+
+      setTimeout(() => {
+        isFlying = false;
+        rotSpeed = 0.0003;
+        openModal(code);
+      }, 1500);
+    }
+
+    // ── Modal ──
+    function openModal(code) {
+      const group = countryGroups[code];
+      if (!group) return;
+
+      document.getElementById('modalCountry').textContent = codeToFlag(code) + ' ' + group.name;
+      document.getElementById('modalStats').textContent = group.responses.length + ' reflection' + (group.responses.length > 1 ? 's' : '');
+
+      const container = document.getElementById('modalResponses');
+      container.innerHTML = '';
+
+      group.responses.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'response-card';
+
+        const date = new Date(r.submitted_at || r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        let html = '<div class="response-name">' + r.respondent_name + '</div>';
+        html += '<div class="response-date">' + date + '</div>';
+        html += '<div class="response-qa">';
+
+        if (r.answers && r.answers.length) {
+          r.answers.forEach(a => {
+            html += '<div class="response-q">' + a.question + '</div>';
+            html += '<div class="response-a">"' + a.answer + '"</div>';
+          });
+        }
+        html += '</div>';
+        card.innerHTML = html;
+        container.appendChild(card);
+      });
+
+      document.getElementById('modalOverlay').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    });
+
+    // ── Controls ──
+    function setupControls() {
+      const c = document.getElementById('canvas-container');
+      c.addEventListener('mousedown', (e) => { isDragging = true; prevMouse = { x: e.clientX, y: e.clientY }; });
+      addEventListener('mousemove', (e) => {
+        if (isDragging && !isFlying) {
+          globe.rotation.y += (e.clientX - prevMouse.x) * 0.005;
+          globe.rotation.x = Math.max(-1, Math.min(1, globe.rotation.x + (e.clientY - prevMouse.y) * 0.003));
+          prevMouse = { x: e.clientX, y: e.clientY };
+          rotSpeed = 0;
+        }
+      });
+      addEventListener('mouseup', () => { isDragging = false; if (!rotSpeed) rotSpeed = 0.001; });
+      addEventListener('resize', () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+
+      // Touch support
+      let touchStart = null;
+      c.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY }; } });
+      c.addEventListener('touchmove', (e) => {
+        if (touchStart && !isFlying) {
+          globe.rotation.y += (e.touches[0].clientX - touchStart.x) * 0.005;
+          globe.rotation.x = Math.max(-1, Math.min(1, globe.rotation.x + (e.touches[0].clientY - touchStart.y) * 0.003));
+          touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          rotSpeed = 0;
+        }
+      });
+      c.addEventListener('touchend', () => { touchStart = null; if (!rotSpeed) rotSpeed = 0.001; });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (isFlying) {
+        globe.rotation.y += (targetRotY - globe.rotation.y) * 0.05;
+        globe.rotation.x += (targetRotX - globe.rotation.x) * 0.05;
+      } else if (!isDragging) {
+        globe.rotation.y += rotSpeed;
+      }
+      stars.rotation.y += 0.0001;
+      renderer.render(scene, camera);
+    }
+
+    // ── Load data and build globe ──
+    async function loadData() {
+      try {
+        // Try existing session first, fall back to sign-in
+        let jwt = await API.getSession();
+        if (!jwt) {
+          await API.signIn('agenticinbox33@gmail.com', 'TestPassword123!');
+          jwt = await API.getSession();
+        }
+
+        // Fetch responses with answers
+        const responses = await API.getResponsesWithAnswers();
+
+        // Group by country
+        countryGroups = {};
+        let totalReflections = 0;
+
+        responses.forEach(r => {
+          const code = r.country_code;
+          if (!code || !COORDS[code]) return;
+          if (!countryGroups[code]) {
+            countryGroups[code] = { name: r.country_name || code, responses: [] };
+          }
+          countryGroups[code].responses.push(r);
+          totalReflections++;
+        });
+
+        // Header count
+        const countries = Object.keys(countryGroups);
+        document.getElementById('headerCount').textContent =
+          totalReflections + ' reflections from ' + countries.length + ' countr' + (countries.length === 1 ? 'y' : 'ies');
+
+        // Place markers
+        countries.forEach(code => {
+          const [lat, lon] = COORDS[code];
+          addMarker(lat, lon, countryGroups[code].responses.length);
+        });
+
+        // Build country pills
+        const bar = document.getElementById('countryBar');
+        countries
+          .sort((a, b) => countryGroups[b].responses.length - countryGroups[a].responses.length)
+          .forEach(code => {
+            const g = countryGroups[code];
+            const pill = document.createElement('div');
+            pill.className = 'country-pill';
+            pill.innerHTML =
+              '<div class="pill-flag">' + codeToFlag(code) + '</div>' +
+              '<div class="pill-name">' + g.name + '</div>' +
+              '<div class="pill-count">' + g.responses.length + ' reflection' + (g.responses.length > 1 ? 's' : '') + '</div>';
+            pill.addEventListener('click', () => flyTo(code));
+            bar.appendChild(pill);
+          });
+
+      } catch (e) {
+        console.error('Failed to load data:', e.message);
+        document.getElementById('headerCount').textContent = 'could not load reflections';
+      }
+
+      document.getElementById('loading').classList.add('done');
+    }
+
+    // ── Boot ──
+    init();
+    animate();
+    loadData();
+  </script>
+</body>
+</html>
